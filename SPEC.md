@@ -266,27 +266,93 @@ Content-Type: application/json
 { /* OKAP request object */ }
 ```
 
-## 8. Security Considerations
+## 8. Vault Ownership Models
 
-### 8.1 Token Security
+OKAP is vault-agnostic. The protocol works regardless of who operates the vault. Users choose their trust model.
+
+### 8.1 Self-Hosted
+
+Users run their own vault on local hardware or personal cloud infrastructure.
+
+**Examples**: llmux, LiteLLM proxy, custom implementation
+
+| Pros | Cons |
+|------|------|
+| Full control | Requires technical setup |
+| No third-party trust | User manages uptime |
+| Keys never leave your infrastructure | No managed updates |
+
+**Best for**: Developers, privacy-conscious users, enterprises with compliance requirements.
+
+### 8.2 Browser Extension
+
+A browser extension acts as the vault, storing keys locally or in user-controlled encrypted storage.
+
+**Examples**: Hypothetical "OKAP Wallet" extension, 1Password integration
+
+| Pros | Cons |
+|------|------|
+| Easy setup | Browser-only |
+| Keys stay local | Extension trust required |
+| Works with any web app | Mobile support limited |
+
+**Best for**: Individual developers, casual users, web-first workflows.
+
+### 8.3 Third-Party Service
+
+A managed service operates the vault on behalf of users.
+
+**Examples**: Cloudflare AI Gateway, Eden AI, Portkey
+
+| Pros | Cons |
+|------|------|
+| No infrastructure to manage | Trust third party with traffic |
+| Professional uptime/support | Potential vendor lock-in |
+| Additional features (caching, analytics) | Monthly costs |
+
+**Best for**: Teams, startups, users who prioritize convenience over control.
+
+### 8.4 Provider-Native
+
+AI providers (OpenAI, Anthropic, Google) implement OKAP directly, issuing scoped tokens from their own dashboards.
+
+**Examples**: None yet (future possibility)
+
+| Pros | Cons |
+|------|------|
+| No proxy needed | Requires provider adoption |
+| Native integration | Each provider implements separately |
+| Maximum performance | User still manages multiple dashboards |
+
+**Best for**: Everyone, if providers adopt the standard.
+
+### 8.5 Hybrid
+
+Combine models: use a browser extension for web apps, self-hosted for production servers, provider-native when available.
+
+OKAP tokens are interchangeable. An app doesn't know (or care) which vault type issued the token.
+
+## 9. Security Considerations
+
+### 9.1 Token Security
 
 - Tokens SHOULD be transmitted over HTTPS only
 - Tokens SHOULD be stored securely (not in localStorage for web apps)
 - Tokens SHOULD have reasonable expiration times
 
-### 8.2 Vault Security
+### 9.2 Vault Security
 
 - Vaults MUST encrypt master keys at rest
 - Vaults MUST authenticate users before showing authorization prompts
 - Vaults SHOULD support 2FA for sensitive operations
 
-### 8.3 Request Validation
+### 9.3 Request Validation
 
 - Vaults SHOULD verify client identity when possible
 - Vaults SHOULD display clear information about the requesting app
 - Users SHOULD be warned about unusual requests
 
-## 9. Future Extensions
+## 10. Future Extensions
 
 - Multi-provider requests (request access to multiple providers at once)
 - Delegation chains (apps granting sub-tokens)
