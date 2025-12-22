@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OKAP - Open Key Access Protocol</title>
+    <meta name="description" content="Secure, user-controlled API key delegation. Think OAuth, but for API keys.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 80px 24px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 48px 20px;
+            }
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        @media (max-width: 600px) {
+            .hero {
+                margin-bottom: 48px;
+            }
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 32px;
+            filter: grayscale(100%) brightness(2);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .tagline {
+            font-size: 1.125rem;
+            color: #888;
+            margin-bottom: 40px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+        .btn-primary {
+            background: #fff;
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #fff;
+            border: 1px solid #333;
+        }
+
+        .btn-secondary:hover {
+            border-color: #555;
+            background: #111;
+        }
+
+        .section {
+            margin-bottom: 64px;
+        }
+
+        @media (max-width: 600px) {
+            .section {
+                margin-bottom: 48px;
+            }
+        }
+
+        h2 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 600px) {
+            .problem-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+
+        .problem-card {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .problem-card h3 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #888;
+        }
+
+        .problem-card.solution h3 {
+            color: #fff;
+        }
+
+        .problem-card p {
+            color: #666;
+            font-size: 0.9375rem;
+        }
+
+        .problem-card.solution p {
+            color: #999;
+        }
+
+        .code-block {
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 8px;
+            padding: 24px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', 'Monaco', monospace;
+            font-size: 0.8125rem;
+            line-height: 1.7;
+        }
+
+        .code-block .comment {
+            color: #8b949e;
+        }
+
+        .code-block .keyword {
+            color: #ff7b72;
+        }
+
+        .code-block .string {
+            color: #a5d6ff;
+        }
+
+        .code-block .function {
+            color: #d2a8ff;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+        }
+
+        @media (max-width: 600px) {
+            .features {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+        }
+
+        .feature h3 {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .feature p {
+            color: #666;
+            font-size: 0.875rem;
+        }
+
+        .install-block {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            padding: 16px 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .install-block code {
+            color: #fff;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 48px 0;
+            border-top: 1px solid #1a1a1a;
+            color: #444;
+            font-size: 0.875rem;
+        }
+
+        .footer a {
+            color: #666;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: #fff;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="hero">
+            <img src="https://raw.githubusercontent.com/openkeyprotocol/okap/main/logo.png" alt="OKAP" class="logo">
+            <h1>Open Key Access Protocol</h1>
+            <p class="tagline">Secure, user-controlled API key delegation</p>
+            <div class="cta-buttons">
+                <a href="https://github.com/openkeyprotocol/okap" class="btn btn-primary">
+                    Read the Spec
+                </a>
+                <a href="https://github.com/openkeyprotocol/python-sdk" class="btn btn-secondary">
+                    Python SDK
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>The Problem</h2>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <h3>Today</h3>
+                    <p>Every app asks you to paste your API key. Keys end up scattered across dozens of apps with no
+                        visibility or control.</p>
+                </div>
+                <div class="problem-card solution">
+                    <h3>With OKAP</h3>
+                    <p>Your keys stay in one vault. Apps request scoped tokens. Revoke any app instantly without
+                        rotating your key.</p>
+                </div>
+            </div>
+
+            <div class="section" style="text-align: center;">
+                <h2>Architecture</h2>
+                <img src="architecture.png" alt="OKAP Architecture"
+                    style="max-width: 100%; border-radius: 8px; margin-top: 16px;">
+            </div>
+
+            <div class="section">
+                <h2>Code Example</h2>
+                <pre class="code-block"><span class="comment"># App requests access from user's vault</span>
+<span class="keyword">from</span> okap <span class="keyword">import</span> OkapClient
+
+client = OkapClient(<span class="string">"https://vault.okap.dev"</span>)
+token = client.<span class="function">request_access</span>(provider=<span class="string">"openai"</span>, models=[<span class="string">"gpt-4"</span>])
+
+<span class="comment"># Use with OpenAI SDK — key never leaves the vault</span>
+ai = OpenAI(api_key=token.key, base_url=token.base_url)</pre>
+            </div>
+
+            <div class="section">
+                <h2>The Specification</h2>
+                <div class="features">
+                    <div class="feature">
+                        <h3>Token Request</h3>
+                        <p>Apps request scoped access: provider, models, limits, expiration.</p>
+                    </div>
+                    <div class="feature">
+                        <h3>API Proxying</h3>
+                        <p>Vault proxies requests, injecting keys and enforcing limits.</p>
+                    </div>
+                    <div class="feature">
+                        <h3>Revocation</h3>
+                        <p>Users revoke any token instantly without rotating keys.</p>
+                    </div>
+                </div>
+                <p style="margin-top: 16px;"><a href="https://github.com/openkeyprotocol/okap/blob/main/SPEC.md"
+                        style="color: #888;">Read the full specification →</a></p>
+            </div>
+
+            <div class="section">
+                <h2>Get Started</h2>
+                <div class="problem-grid">
+                    <div class="problem-card">
+                        <h3 style="color: #fff;">Python SDK</h3>
+                        <p><code>pip install okap</code></p>
+                        <p style="margin-top: 8px;"><a href="https://github.com/openkeyprotocol/python-sdk"
+                                style="color: #666;">GitHub</a> · <a href="https://pypi.org/project/okap/"
+                                style="color: #666;">PyPI</a></p>
+                    </div>
+                    <div class="problem-card solution">
+                        <h3 style="color: #fff;">Hosted Vault</h3>
+                        <p>Store keys, issue tokens</p>
+                        <p style="margin-top: 8px;"><a href="https://vault.okap.dev" style="color: #666;">vault.okap.dev
+                                →</a></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>FAQ</h2>
+
+                <!-- How it works -->
+                <div class="problem-card" style="margin-bottom: 16px;">
+                    <h3 style="color: #fff;">Do apps need to support OKAP?</h3>
+                    <p>Yes. Apps implement the OKAP client instead of asking for raw keys. The more apps adopt it, the
+                        more useful it becomes.</p>
+                </div>
+                <div class="problem-card" style="margin-bottom: 16px;">
+                    <h3 style="color: #fff;">Can I use this with Cursor, Claude Desktop, etc?</h3>
+                    <p>Not yet. Those apps would need to add OKAP support. We're building the protocol so they can adopt
+                        it.</p>
+                </div>
+                <div class="problem-card" style="margin-bottom: 16px;">
+                    <h3 style="color: #fff;">What providers are supported?</h3>
+                    <p>OpenAI, Anthropic, and Google. The protocol is provider-agnostic, so adding more is
+                        straightforward.</p>
+                </div>
+
+                <!-- Security & storage -->
+                <div class="problem-card" style="margin-bottom: 16px;">
+                    <h3 style="color: #fff;">How are keys stored?</h3>
+                    <p>Keys are stored in Cloudflare KV (encrypted at rest), accessed only via authenticated sessions.
+                        They're never logged or exposed in responses.</p>
+                </div>
+                <div class="problem-card" style="margin-bottom: 16px;">
+                    <h3 style="color: #fff;">Is the vault a security risk?</h3>
+                    <p>Your keys stay encrypted. Apps only receive scoped tokens—never your actual keys. You can set
+                        spend limits and revoke any app's access instantly.</p>
+                </div>
+
+                <!-- Operations -->
+                <div class="problem-card" style="margin-bottom: 16px;">
+                    <h3 style="color: #fff;">Will OKAP get rate-limited as more users join?</h3>
+                    <p>No. Each user's requests use their own API key. Rate limits apply to your key, not OKAP.</p>
+                </div>
+                <div class="problem-card" style="margin-bottom: 16px;">
+                    <h3 style="color: #fff;">What if the vault goes down?</h3>
+                    <p>The vault runs on Cloudflare's global edge network with automatic failover. Apps with valid
+                        tokens continue working. New token requests would fail until restored.</p>
+                </div>
+
+                <!-- Comparison -->
+                <div class="problem-card" style="margin-bottom: 16px;">
+                    <h3 style="color: #fff;">How does this compare to other solutions?</h3>
+                    <div style="overflow-x: auto; margin-top: 12px;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid #333;">
+                                    <th style="text-align: left; padding: 8px; color: #888;"></th>
+                                    <th style="text-align: center; padding: 8px; color: #888;">OKAP</th>
+                                    <th style="text-align: center; padding: 8px; color: #888;">.env files</th>
+                                    <th style="text-align: center; padding: 8px; color: #888;">Secrets Managers</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid #222;">
+                                    <td style="padding: 8px;">Scoped access</td>
+                                    <td style="text-align: center; padding: 8px; color: #4ade80;">✓</td>
+                                    <td style="text-align: center; padding: 8px; color: #888;">✗</td>
+                                    <td style="text-align: center; padding: 8px; color: #888;">✗</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #222;">
+                                    <td style="padding: 8px;">Per-app revocation</td>
+                                    <td style="text-align: center; padding: 8px; color: #4ade80;">✓</td>
+                                    <td style="text-align: center; padding: 8px; color: #888;">✗</td>
+                                    <td style="text-align: center; padding: 8px; color: #888;">✗</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #222;">
+                                    <td style="padding: 8px;">Spend limits</td>
+                                    <td style="text-align: center; padding: 8px; color: #4ade80;">✓</td>
+                                    <td style="text-align: center; padding: 8px; color: #888;">✗</td>
+                                    <td style="text-align: center; padding: 8px; color: #888;">✗</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #222;">
+                                    <td style="padding: 8px;">No infra needed</td>
+                                    <td style="text-align: center; padding: 8px; color: #4ade80;">✓</td>
+                                    <td style="text-align: center; padding: 8px; color: #4ade80;">✓</td>
+                                    <td style="text-align: center; padding: 8px; color: #888;">✗</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px;">AI-provider aware</td>
+                                    <td style="text-align: center; padding: 8px; color: #4ade80;">✓</td>
+                                    <td style="text-align: center; padding: 8px; color: #888;">✗</td>
+                                    <td style="text-align: center; padding: 8px; color: #888;">✗</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Self-host -->
+                <div class="problem-card">
+                    <h3 style="color: #fff;">Can I self-host?</h3>
+                    <p>Yes, for teams/orgs who want their own infrastructure. Deploy the <a
+                            href="https://github.com/openkeyprotocol/server" style="color: #888;">reference server</a>
+                        or Cloudflare Worker to a public URL.</p>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>CC0 1.0 — Public Domain</p>
+            <div class="footer-links">
+                <a href="https://github.com/openkeyprotocol/okap/blob/main/SPEC.md">Spec</a>
+                <a href="https://github.com/openkeyprotocol">GitHub</a>
+                <a href="https://vault.okap.dev">Vault</a>
+            </div>
+        </footer>
+</body>
+
+</html>

@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.png" alt="OKAP Logo" width="150">
+</p>
+
 # OKAP: Open Key Access Protocol
 
 **OKAP** (Open Key Access Protocol) is a proposed standard for secure, user-controlled API key delegation. Think OAuth, but for API keys.
@@ -10,6 +14,27 @@ Developers have API keys for multiple AI providers (OpenAI, Anthropic, Google, e
 - **No revocation**: Can't easily disable one app's access
 - **No limits**: Apps get full access to your quota
 - **No audit trail**: No idea who's using what
+
+## Who is this for?
+
+**If you're a user with API keys:**
+- Run a vault (locally or hosted)
+- Add your keys once
+- Give apps your vault URL instead of your key
+- Revoke any app anytime
+
+**If you're building an app that needs AI:**
+- Implement OKAP instead of asking users to paste keys
+- Users connect their vault
+- You get a scoped token, never see their real key
+
+```
+Today:   "Paste your OpenAI key" → user pastes sk-abc123
+         "Paste your OpenAI key" → user pastes sk-abc123
+         
+With OKAP: "Connect your vault" → user enters vault URL → done
+           "Connect your vault" → user enters vault URL → done
+```
 
 ## The Solution
 
@@ -57,12 +82,24 @@ See [SPEC.md](./SPEC.md) for the full protocol specification.
 
 ### User sees:
 
-> **Example App** wants to use your OpenAI API key
-> - Models: GPT-4, GPT-4o-mini
-> - Limit: $10/month
-> - Expires: March 1, 2025
-> 
-> [Allow] [Deny]
+```
+┌─────────────────────────────────────────────────┐
+│                                                 │
+│   Example App wants to use your OpenAI key      │
+│                                                 │
+│   Provider:  OpenAI                             │
+│   Models:    gpt-4, gpt-4o-mini                 │
+│   Limit:     $10/month                          │
+│   Expires:   March 1, 2025                      │
+│                                                 │
+│              ┌───────┐  ┌────────┐              │
+│              │ Allow │  │  Deny  │              │
+│              └───────┘  └────────┘              │
+│                                                 │
+└─────────────────────────────────────────────────┘
+```
+
+**Headless mode:** For personal use or trusted environments, vaults can auto-approve requests without user interaction.
 
 ### App receives:
 
@@ -92,6 +129,11 @@ The app uses `base_url` instead of `api.openai.com`. The vault proxies requests 
 ## Contributing
 
 Open an issue or PR. Let's make API key management less painful.
+
+## Implementations
+
+- **Python SDK**: [openkeyprotocol/python-sdk](https://github.com/openkeyprotocol/python-sdk) - `pip install okap`
+- **Reference Server**: [openkeyprotocol/server](https://github.com/openkeyprotocol/server)
 
 ## License
 
