@@ -311,7 +311,7 @@
 client = OkapClient(<span class="string">"https://vault.okap.dev"</span>)
 token = client.<span class="function">request_access</span>(provider=<span class="string">"openai"</span>, models=[<span class="string">"gpt-4"</span>])
 
-<span class="comment"># Use with OpenAI SDK — key never leaves the vault</span>
+<span class="comment"># Use with OpenAI SDK - key never leaves the vault</span>
 ai = OpenAI(api_key=token.key, base_url=token.base_url)</pre>
             </div>
 
@@ -382,7 +382,7 @@ ai = OpenAI(api_key=token.key, base_url=token.base_url)</pre>
                 </div>
                 <div class="problem-card" style="margin-bottom: 16px;">
                     <h3 style="color: #fff;">Is the vault a security risk?</h3>
-                    <p>Your keys stay encrypted. Apps only receive scoped tokens—never your actual keys. You can set
+                    <p>Your keys stay encrypted. Apps only receive scoped tokens-never your actual keys. You can set
                         spend limits and revoke any app's access instantly.</p>
                 </div>
 
@@ -449,7 +449,7 @@ ai = OpenAI(api_key=token.key, base_url=token.base_url)</pre>
                 <!-- OpenRouter comparison -->
                 <div class="problem-card" style="margin-bottom: 16px;">
                     <h3 style="color: #fff;">Why not just use OpenRouter?</h3>
-                    <p>OpenRouter is great! But it's a different model. With OpenRouter, you use their unified key—they
+                    <p>OpenRouter is great! But it's a different model. With OpenRouter, you use their unified key-they
                         manage provider access. With OKAP, you keep your own keys (for enterprise contracts, credits, or
                         full control) and delegate scoped access to apps.</p>
                 </div>
@@ -465,7 +465,7 @@ ai = OpenAI(api_key=token.key, base_url=token.base_url)</pre>
         </div>
 
         <footer class="footer">
-            <p>CC0 1.0 — Public Domain</p>
+            <p>CC0 1.0 - Public Domain</p>
             <div class="footer-links">
                 <a href="https://github.com/openkeyprotocol/okap/blob/main/SPEC.md">Spec</a>
                 <a href="https://github.com/openkeyprotocol">GitHub</a>
