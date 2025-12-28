@@ -4,7 +4,7 @@
 
 # OKAP: Open Key Access Protocol
 
-**OKAP** (Open Key Access Protocol) is a proposed standard for secure, user-controlled API key delegation. Think OAuth, but for API keys.
+**OKAP** (Open Key Access Protocol) is a lightweight protocol for secure, user-controlled AI API key delegation. Inspired by OAuth 2.0 RAR (RFC 9396), OKAP uses structured authorization details instead of scope strings for fine-grained access control.
 
 ## The Problem
 
@@ -67,15 +67,23 @@ See [SPEC.md](./SPEC.md) for the full protocol specification.
 ```json
 {
   "okap": "1.0",
-  "request": {
-    "provider": "openai",
-    "models": ["gpt-4", "gpt-4o-mini"],
-    "capabilities": ["chat", "embeddings"],
-    "limits": {
-      "monthly_spend": 10.00,
-      "requests_per_minute": 60
-    },
-    "expires": "2025-03-01"
+  "authorization_details": [
+    {
+      "type": "ai_model_access",
+      "provider": "openai",
+      "models": ["gpt-4", "gpt-4o-mini"],
+      "capabilities": ["chat", "embeddings"],
+      "limits": {
+        "monthly_spend": 10.00,
+        "requests_per_minute": 60
+      },
+      "expires": "2025-03-01"
+    }
+  ],
+  "client": {
+    "name": "Example App",
+    "url": "https://app.example.com",
+    "callback": "https://app.example.com/callback"
   }
 }
 ```
@@ -106,13 +114,21 @@ See [SPEC.md](./SPEC.md) for the full protocol specification.
 ```json
 {
   "okap": "1.0",
+  "status": "granted",
   "token": "okap_abc123...",
-  "base_url": "https://vault.example.com/v1",
-  "expires": "2025-03-01T00:00:00Z"
+  "authorization_details": [
+    {
+      "type": "ai_model_access",
+      "provider": "openai",
+      "models": ["gpt-4", "gpt-4o-mini"],
+      "base_url": "https://vault.example.com/v1/openai",
+      "expires": "2025-03-01T00:00:00Z"
+    }
+  ]
 }
 ```
 
-The app uses `base_url` instead of `api.openai.com`. The vault proxies requests using the user's real key.
+The app uses `base_url` from the enriched authorization details. The vault proxies requests using the user's real key.
 
 ## Key Principles
 
@@ -120,11 +136,39 @@ The app uses `base_url` instead of `api.openai.com`. The vault proxies requests 
 2. **Scoped access**: Apps get exactly what they request, nothing more
 3. **Revocable**: Users can revoke app access instantly
 4. **Auditable**: Full visibility into usage per app
-5. **Standard**: Any vault can implement OKAP
+5. **Transport-agnostic**: Works with browser extensions, HTTP, OAuth, etc.
+6. **Structured permissions**: Uses typed authorization details, not scope strings
+
+## Why Not OAuth Scopes?
+
+OKAP uses structured `authorization_details` instead of scope strings. Compare:
+
+**Scope approach** (what we avoid):
+```
+scope=ai:openai:gpt-4:chat:limit:10
+```
+
+**OKAP approach** (structured):
+```json
+{
+  "type": "ai_model_access",
+  "provider": "openai",
+  "models": ["gpt-4"],
+  "limits": { "monthly_spend": 10.00 }
+}
+```
+
+Structured authorization details provide better validation, easier parsing, and clearer semantics.
 
 ## Status
 
-**Draft** - Looking for feedback and collaborators.
+**v1.0** - Built on RFC 9396 (OAuth 2.0 Rich Authorization Requests). See [docs/migration-guide.md](./docs/migration-guide.md) for changes from v0.x.
+
+## Documentation
+
+- [Full Specification](./SPEC.md) - Complete OKAP protocol specification
+- [RAR Type Specification](./docs/rar-type-spec.md) - `ai_model_access` authorization type
+- [Migration Guide](./docs/migration-guide.md) - Upgrading from v0.x to v1.0
 
 ## Contributing
 

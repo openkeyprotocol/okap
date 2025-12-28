@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OKAP - Open Key Access Protocol</title>
-    <meta name="description" content="Secure, user-controlled API key delegation. Think OAuth, but for API keys.">
+    <meta name="description"
+        content="Lightweight protocol for secure AI API key delegation using structured authorization details.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -271,7 +272,7 @@
         <div class="hero">
             <img src="https://raw.githubusercontent.com/openkeyprotocol/okap/main/logo.png" alt="OKAP" class="logo">
             <h1>Open Key Access Protocol</h1>
-            <p class="tagline">Secure, user-controlled API key delegation</p>
+            <p class="tagline">Lightweight protocol for secure, user-controlled AI API key delegation</p>
             <div class="cta-buttons">
                 <a href="https://github.com/openkeyprotocol/okap" class="btn btn-primary">
                     Read the Spec
@@ -299,8 +300,10 @@
 
             <div class="section" style="text-align: center;">
                 <h2>Architecture</h2>
-                <img src="architecture.png" alt="OKAP Architecture"
-                    style="max-width: 100%; border-radius: 8px; margin-top: 16px;">
+                <img src="architecture-detailed.png" alt="OKAP Detailed Architecture"
+                    style="max-width: 100%; border-radius: 8px; margin-top: 16px; border: 1px solid #1a1a1a;">
+                <p style="margin-top: 12px; color: #666; font-size: 0.875rem;">Structured authorization flow using
+                    RAR-inspired patterns</p>
             </div>
 
             <div class="section">
@@ -319,16 +322,16 @@ ai = OpenAI(api_key=token.key, base_url=token.base_url)</pre>
                 <h2>The Specification</h2>
                 <div class="features">
                     <div class="feature">
-                        <h3>Token Request</h3>
-                        <p>Apps request scoped access: provider, models, limits, expiration.</p>
+                        <h3>Structured Authorization</h3>
+                        <p>Uses typed JSON objects, not scope strings. Inspired by RFC 9396.</p>
                     </div>
                     <div class="feature">
                         <h3>API Proxying</h3>
                         <p>Vault proxies requests, injecting keys and enforcing limits.</p>
                     </div>
                     <div class="feature">
-                        <h3>Revocation</h3>
-                        <p>Users revoke any token instantly without rotating keys.</p>
+                        <h3>Multi-Provider</h3>
+                        <p>Request access to multiple AI providers in single authorization.</p>
                     </div>
                 </div>
                 <p style="margin-top: 16px;"><a href="https://github.com/openkeyprotocol/okap/blob/main/SPEC.md"

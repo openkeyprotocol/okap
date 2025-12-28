@@ -4,7 +4,9 @@
 
 ## Abstract
 
-OKAP (Open Key Access Protocol) defines a standard for applications to request scoped access to a user's API keys, and for users to grant or deny that access through a trusted vault. The protocol enables secure delegation of API key access without exposing master keys to third-party applications.
+OKAP (Open Key Access Protocol) is a lightweight protocol for applications to request scoped access to a user's AI provider API keys. Inspired by OAuth 2.0 Rich Authorization Requests (RFC 9396), OKAP uses structured authorization details instead of scope strings to express fine-grained access requirements. Users grant or deny access through a trusted vault that proxies requests. The protocol enables secure delegation of API key access without exposing master keys to third-party applications.
+
+OKAP is transport-agnostic and works with browser extensions, native apps, and server-to-server flows. It can also be adopted by OAuth 2.0 authorization servers as a RAR type.
 
 ## 1. Overview
 
@@ -53,12 +55,28 @@ OKAP (Open Key Access Protocol) defines a standard for applications to request s
 
 ## 3. Request Format
 
-### 3.1 OKAP Request Object
+OKAP adopts a structured authorization details pattern inspired by RFC 9396, avoiding scope strings in favor of explicit JSON objects.
+
+### 3.1 OKAP Request Structure
+
+An OKAP authorization request contains:
 
 ```json
 {
   "okap": "1.0",
-  "request": {
+  "authorization_details": [...],
+  "client": {...}
+}
+```
+
+### 3.2 Authorization Details Array
+
+The `authorization_details` array contains one or more authorization objects, each with type `ai_model_access`:
+
+```json
+[
+  {
+    "type": "ai_model_access",
     "provider": "<provider_id>",
     "models": ["<model_id>", ...],
     "capabilities": ["<capability>", ...],
@@ -70,34 +88,55 @@ OKAP (Open Key Access Protocol) defines a standard for applications to request s
     },
     "expires": "<ISO 8601 date>",
     "reason": "<human-readable reason>"
-  },
+  }
+]
+```
+
+**Example complete request:**
+
+```json
+{
+  "okap": "1.0",
+  "authorization_details": [
+    {
+      "type": "ai_model_access",
+      "provider": "openai",
+      "models": ["gpt-4"],
+      "limits": { "monthly_spend": 10.00 }
+    }
+  ],
   "client": {
-    "name": "<app_name>",
-    "url": "<app_url>",
-    "callback": "<callback_url>"
+    "name": "Example App",
+    "url": "https://app.example.com",
+    "callback": "https://app.example.com/callback"
   }
 }
 ```
 
-### 3.2 Fields
+### 3.3 Authorization Details Fields
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `okap` | string | Yes | Protocol version, currently "1.0" |
-| `request.provider` | string | Yes | Provider identifier (e.g., "openai", "anthropic") |
-| `request.models` | array | No | Specific models requested. Empty = all available |
-| `request.capabilities` | array | No | Capabilities requested (e.g., "chat", "embeddings", "images") |
-| `request.limits.monthly_spend` | number | No | Maximum spend per month in USD |
-| `request.limits.daily_spend` | number | No | Maximum spend per day in USD |
-| `request.limits.requests_per_minute` | number | No | Rate limit per minute |
-| `request.limits.requests_per_day` | number | No | Maximum requests per day |
-| `request.expires` | string | No | Token expiration date (ISO 8601) |
-| `request.reason` | string | No | Human-readable reason for access |
-| `client.name` | string | Yes | Application name |
-| `client.url` | string | No | Application URL |
-| `client.callback` | string | No | Callback URL for response |
+| `type` | string | Yes | Must be "ai_model_access" |
+| `provider` | string | Yes | Provider identifier (e.g., "openai", "anthropic") |
+| `models` | array | No | Specific models requested. Empty = all available |
+| `capabilities` | array | No | Capabilities requested (e.g., "chat", "embeddings", "images") |
+| `limits.monthly_spend` | number | No | Maximum spend per month in USD |
+| `limits.daily_spend` | number | No | Maximum spend per day in USD |
+| `limits.requests_per_minute` | number | No | Rate limit per minute |
+| `limits.requests_per_day` | number | No | Maximum requests per day |
+| `expires` | string | No | Token expiration date (ISO 8601) |
+| `reason` | string | No | Human-readable reason for access |
 
-### 3.3 Provider Identifiers
+### 3.4 Client Information
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `client.name` | string | Yes | Application name |
+| `client.url` | string | Recommended | Application URL |
+| `client.callback` | string | Context-dependent | Callback URL for response |
+
+### 3.5 Provider Identifiers
 
 Standard provider identifiers:
 
@@ -111,7 +150,7 @@ Standard provider identifiers:
 | Mistral | `mistral` |
 | Cohere | `cohere` |
 
-### 3.4 Capabilities
+### 3.6 Capabilities
 
 Standard capabilities:
 
@@ -126,21 +165,33 @@ Standard capabilities:
 
 ## 4. Response Format
 
-### 4.1 Success Response
+### 4.1 Grant Response
+
+When a user grants access, the vault returns:
 
 ```json
 {
   "okap": "1.0",
   "status": "granted",
-  "token": "<okap_token>",
-  "base_url": "<proxy_base_url>",
-  "expires": "<ISO 8601 datetime>",
-  "limits": {
-    "monthly_spend": <number>,
-    "requests_per_minute": <number>
-  }
+  "token": "okap_<token>",
+  "authorization_details": [
+    {
+      "type": "ai_model_access",
+      "provider": "openai",
+      "models": ["gpt-4"],
+      "capabilities": ["chat"],
+      "limits": {
+        "monthly_spend": 10.00,
+        "requests_per_minute": 60
+      },
+      "base_url": "https://vault.example.com/v1/openai",
+      "expires": "2025-03-01T00:00:00Z"
+    }
+  ]
 }
 ```
+
+**Note:** The `authorization_details` in the response MAY be enriched with vault-specific fields like `base_url` and actual granted permissions (which may differ from requested).
 
 ### 4.2 Denial Response
 
@@ -148,32 +199,34 @@ Standard capabilities:
 {
   "okap": "1.0",
   "status": "denied",
-  "reason": "<optional_reason>"
+  "reason": "User declined authorization request"
 }
 ```
 
-### 4.3 Fields
+### 4.3 Response Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
+| `okap` | string | Protocol version |
 | `status` | string | "granted" or "denied" |
-| `token` | string | OKAP token for API calls (prefixed with `okap_`) |
-| `base_url` | string | Base URL for API calls (vault proxy) |
-| `expires` | string | Token expiration datetime |
-| `limits` | object | Actual limits applied (may differ from requested) |
+| `token` | string | OKAP token (prefixed with `okap_`) |
+| `authorization_details` | array | Enriched authorization details showing what was granted |
+| `authorization_details[].base_url` | string | Provider-specific vault proxy endpoint |
+| `authorization_details[].expires` | string | Token expiration (ISO 8601) |
+| `reason` | string | Reason for denial (only in denial response) |
 
 ## 5. API Usage
 
 ### 5.1 Using OKAP Token
 
-Apps use the token and base_url to make API calls:
+Apps use the access_token from the OAuth token response:
 
 ```python
 from openai import OpenAI
 
 client = OpenAI(
     api_key="okap_abc123...",
-    base_url="https://vault.example.com/v1"
+    base_url="https://vault.example.com/v1/openai"
 )
 
 response = client.chat.completions.create(
@@ -181,6 +234,8 @@ response = client.chat.completions.create(
     messages=[{"role": "user", "content": "Hello"}]
 )
 ```
+
+Note: The `base_url` is obtained from the `authorization_details[].base_url` field in the token response.
 
 ### 5.2 Vault Proxying
 
@@ -230,41 +285,88 @@ Expired tokens return:
 
 ## 7. Transport
 
-### 7.1 Browser Extension
+OKAP is transport-agnostic. Different deployment scenarios use different transport mechanisms.
 
-For web apps, the vault can be a browser extension. The app sends a message:
+### 7.1 Browser Extension (Primary Flow)
+
+For web apps, a browser extension acts as the vault:
 
 ```javascript
+// App initiates OKAP request
 window.postMessage({
   type: 'OKAP_REQUEST',
-  request: { /* OKAP request object */ }
+  okap: '1.0',
+  authorization_details: [{
+    type: 'ai_model_access',
+    provider: 'openai',
+    models: ['gpt-4'],
+    limits: { monthly_spend: 10.00 }
+  }],
+  client: {
+    name: 'My App',
+    url: window.location.origin
+  }
 }, '*');
 
+// Vault responds
 window.addEventListener('message', (event) => {
   if (event.data.type === 'OKAP_RESPONSE') {
-    // Handle response
+    const { status, token, authorization_details } = event.data;
+    if (status === 'granted') {
+      const baseUrl = authorization_details[0].base_url;
+      // Use token and baseUrl
+    }
   }
 });
 ```
 
-### 7.2 Native Apps
+### 7.2 HTTP Endpoint
 
-For native apps, the vault can register a URL scheme:
-
-```
-okap://request?data=<base64_encoded_request>
-```
-
-### 7.3 Server-to-Server
-
-For server-side apps, the vault exposes an HTTP endpoint:
+For server-to-server flows, the vault exposes an HTTP endpoint:
 
 ```
-POST https://vault.example.com/okap/authorize
+POST /okap/authorize
 Content-Type: application/json
 
-{ /* OKAP request object */ }
+{
+  "okap": "1.0",
+  "authorization_details": [...],
+  "client": {...}
+}
 ```
+
+Response:
+```json
+{
+  "okap": "1.0",
+  "status": "granted",
+  "token": "okap_...",
+  "authorization_details": [...]
+}
+```
+
+### 7.3 Custom URL Scheme (Native Apps)
+
+For native applications:
+
+```
+okap://authorize?request=<base64_encoded_json>
+```
+
+The vault app handles the URL, shows authorization UI, and returns via callback URL or deep link.
+
+### 7.4 OAuth 2.0 Integration (Optional)
+
+OKAP `authorization_details` can be used with OAuth 2.0 flows:
+
+```
+GET /oauth/authorize?
+  response_type=code&
+  client_id=my_app&
+  authorization_details=<url_encoded_json>
+```
+
+OAuth servers can recognize the `ai_model_access` type and implement OKAP semantics. This allows OKAP to work within existing OAuth infrastructure.
 
 ## 8. Vault Ownership Models
 
@@ -414,4 +516,44 @@ def proxy_chat():
 
 ## Changelog
 
-- **v1.0 (Draft)** - Initial specification
+### v1.0 (2025-01) - RAR-Inspired Structured Authorization
+
+**Major Changes:**
+- Adopted structured `authorization_details` pattern inspired by RFC 9396 (OAuth 2.0 Rich Authorization Requests)
+- Positioned OKAP as **standalone protocol** (not OAuth extension) with optional OAuth compatibility
+- **Eliminated scope strings** in favor of typed JSON authorization objects
+
+**Request Format:**
+- Added `okap` protocol version field
+- Wrapped authorization details in `authorization_details` array
+- Each object requires `type: "ai_model_access"`
+- Replaced OAuth client parameters with OKAP `client` object
+
+**Response Format:**
+- Changed from OAuth token response to OKAP-native format
+- Return `status: "granted"/"denied"` instead of OAuth success/error
+- Enriched `authorization_details` with vault-specific fields (`base_url`, actual limits, etc.)
+- Token field named `token` (not `access_token`)
+
+**Transport:**
+- Emphasized browser extension and HTTP flows as primary mechanisms
+- Added custom URL scheme support (`okap://authorize`)
+- OAuth 2.0 integration preserved as **optional** extension point
+- Removed OAuth-specific requirements
+
+**Documentation:**
+- Created RAR type specification for `ai_model_access`
+- Added migration guide from v0.x to v1.0
+- Documented comparison: structured authorization vs. scope strings
+- Added positioning document explaining protocol independence
+
+**New Capabilities:**
+- Multi-provider requests (multiple `authorization_details` objects in single request)
+- Enriched authorization details in response
+- Transport-agnostic design
+
+### v0.x (Draft) - Initial Specification
+- Custom JSON request format
+- Basic vault proxy architecture
+- Simple token issuance flow
+
